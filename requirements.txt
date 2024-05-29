@@ -1,0 +1,5 @@
+# replace by your packages
+# pip freeze > requirements.txt
+
+SimpleITK==2.3.1
+pandas==2.1.4
