@@ -47,12 +47,12 @@ Edit [`src/inference.sh`](src/inference.sh) to contain the code needed to proces
 - `t2w_image`: Path to the input image. The image is a 3D T2-weighted MRI of the fetal brain in NIfTI format, same as in the training dataset.
 - `participants`: [OPTIONAL] Path to a `participants.tsv` file containing meta-information of gestational age and pathology for each subject. It will follow exactly the same format as the `participants.tsv` file in the training dataset and contain information for all test subjects with columns `participant_id`, `Gestational age` (in weeks), and `Pathology` label.
 - `output_seg`: [OPTIONAL] Path to save the output segmentation (.nii.gz file). The segmentation should contain integer labels corresponding to target tissues, in the same space and dimensions as the input image.
-- `output_biom`: [OPTIONAL] Path to save the output biometry values (in a TSV file). The file should contain predicted biometry measurements in mm for the given subject in columns `LCC`, `HV`, `bBIP`, `sBIP`, and `TCD`. The file should follow exactly the same formatting as the `biometry.tsv` file in the training dataset, but with predicted values for a single subject.
-- `output_landm`: [OPTIONAL] Path to save the output biometry landmarks (in a NIfTI file) in a format similar to the `sub-0XX_rec-xxx_meas.nii.gz` files. The landmarks should be in the same space and have the same dimensions as the input SR image (e.g. they should not in the transformed space unlike `sub-0XX_rec-xxx_meas.nii.gz`). This is an optional output for the biometry task that will not be used for ranking.
+- `output_biom`: [OPTIONAL] Path to save the output biometry values (in a TSV file). The file should contain predicted biometry measurements in millimetres (mm) for the given subject in columns `LCC`, `HV`, `bBIP`, `sBIP`, and `TCD`. The file should follow exactly the same formatting as the `biometry.tsv` file in the training dataset, but with predicted values for a single subject.
+- `output_landm`: [OPTIONAL] Path to save the output biometry landmarks (in a NIfTI file) in a format similar to the `sub-0XX_rec-xxx_meas.nii.gz` files. The landmarks should be in the same space and have the same dimensions as the input SR image (e.g. they should **not** be in the transformed space unlike `sub-0XX_rec-xxx_meas.nii.gz`). This is an optional output for the biometry task that will not be used for ranking.
 
 Ensure the correct environment and dependencies are loaded in the inference script.
 
-**If you are participating in only one of the challenges, modify the [`inference.sh`](src/inference.sh) script to accept only the relevant for you arguments. During inference all arguments mentioned above will be available through corresponding variables, meaning that you could access their values in your `inference.sh` script through $<variable_name>**
+**If you are participating in only one of the challenges, modify the [`inference.sh`](src/inference.sh) script to accept only the relevant arguments for you. During inference, all arguments mentioned above will be available through corresponding variables, meaning that you could access their values in your `inference.sh` script through $<variable_name>**
 
 For example, if you are using Python, we recommend first defining a Python script for inference. See [`src/test.py`](src/test.py) where we have defined a dummy example of such a script, that handles input and output arguments, runs dummy inference and saves outputs in the correct format. Running the script from `inference.sh` should be as simple as:
 
@@ -94,13 +94,13 @@ You can also test your Docker container by running the evaluation script on all 
 sudo docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged -v /path/to/data/locally:/path/to/data/in/docker -e bids_input="/path/to/feta_2.3" -e participants="/path/to/feta_2.3/participants.tsv" -e teamname=<teamname> <teamname> /bin/bash scripts/run_test.sh
 ```
 
-This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note that for running scripts inside the container you need to pass all variables balues with an  `-e` flag.
+This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note that for running scripts inside the container you need to pass all variables values with an  `-e` flag.
 
 ### 2.3 Save and Submit
 Once you successfully build your Docker container, save it to a zipped file and upload it to a cloud platform (e.g., Mega, Google Drive, WeTransfer). Use the following command:
 
 ```bash
-docker save -o <path for generated zip file> <teamname>
+docker save -o <zip_file_path> <teamname>
 ```
 
 Submit your algorithm by sending the download link to feta-challenge@googlegroups.com with the subject "FeTA 2024 Submission [TEAMNAME] Docker Container Submission". The deadline for Docker submission is **31st July 2024**.
