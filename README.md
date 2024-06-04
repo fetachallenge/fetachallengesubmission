@@ -88,13 +88,12 @@ sudo docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=6710886
 In it, the `-v` parameter maps a local path to a specific location in the Docker container space. The `--gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged` arguments enable GPU-accelerated execution. Assignments like `t2w_image=/path/to/data/in/docker/image.nii.gz` pass named arguments to [`src/inference.sh`](src/inference.sh) with paths to input/output files inside the container. Don't forget to adjust the paths to test execution on some training images in the command above.
 
 ### 2.2 Evaluation Script
-You can also test your Docker container by running the evaluation script on all training data:
-
+Finally, please ensure that the evaluation script that iterates through the full dataset works when using the Docker image.
 ```bash
 sudo docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged -v /path/to/data/locally:/path/to/data/in/docker -e bids_input="/path/to/feta_2.3" -e participants="/path/to/feta_2.3/participants.tsv" -e teamname=<teamname> <teamname> /bin/bash scripts/run_test.sh
 ```
 
-This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note that for running scripts inside the container you need to pass all variables values with an  `-e` flag.
+This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note: for running scripts through the container, you need to pass the named variables values using `-e` flag.
 
 ### 2.3 Save and Submit
 Once you successfully build your Docker container, save it to a zipped file and upload it to a cloud platform (e.g., Mega, Google Drive, WeTransfer). Use the following command:
