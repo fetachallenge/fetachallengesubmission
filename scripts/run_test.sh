@@ -22,6 +22,7 @@ for subject_dir in "$bids_input"/sub-*; do
     output_landm="$output_dir/$(basename $t2w_image .nii.gz)_meas.nii.gz"
     output_seg="$output_dir/$(basename $t2w_image .nii.gz)_dseg.nii.gz"
 
+    echo "Processing $t2w_image"
     # Run inference script
     . src/inference.sh
-done | tqdm --total $total_subjects --unit "subject" --unit_scale --dynamic_ncols
+done | tqdm --total $total_subjects --unit "subject" --unit_scale --dynamic_ncols >> /dev/null
