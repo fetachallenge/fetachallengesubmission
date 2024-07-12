@@ -24,7 +24,7 @@ Store your final code in the `src` directory and the final weights in the `weigh
 
 Keep track of your environment and dependencies during development. This information will be necessary for building the Docker container and determining the base image.
 
-For Python solutions, we recommend using a virtual environment to manage dependencies. Use the following commands to create one and save its configuration:
+For Python solutions, we recommend using a virtual environment to manage dependencies. Use the following commands to create one and save its configuration during project development:
 
 ```bash
 # Create and activate a virtual environment
@@ -32,6 +32,8 @@ conda create -n fetachallenge
 conda activate fetachallenge
 
 # Install required packages for training and inference
+# ... with pip for example
+# pip install -r requirements.txt
 # ...
 
 # Save the environment configuration to a file
@@ -50,9 +52,9 @@ Edit [`src/inference.sh`](src/inference.sh) to contain the code needed to proces
 - `output_biom`: [OPTIONAL] Path to save the output biometry values (in a TSV file). The file should contain predicted biometry measurements in millimetres (mm) for the given subject in columns `LCC`, `HV`, `bBIP`, `sBIP`, and `TCD`. The file should follow exactly the same formatting as the `biometry.tsv` file in the training dataset, but with predicted values for a single subject.
 - `output_landm`: [OPTIONAL] Path to save the output biometry landmarks (in a NIfTI file) in a format similar to the `sub-0XX_rec-xxx_meas.nii.gz` files. The landmarks should be in the same space and have the same dimensions as the input SR image (e.g. they should **not** be in the transformed space unlike `sub-0XX_rec-xxx_meas.nii.gz`). This is an optional output for the biometry task that will not be used for ranking.
 
-Ensure the correct environment and dependencies are loaded in the inference script.
 
-**If you are participating in only one of the challenges, modify the [`inference.sh`](src/inference.sh) script to accept only the relevant arguments for you. During inference, all arguments mentioned above will be available through corresponding variables, meaning that you could access their values in your `inference.sh` script through $<variable_name>**
+**If you are participating in only one of the challenges, modify the [`inference.sh`](src/inference.sh) script to accept only the relevant for you arguments. During inference all arguments mentioned above will be available through corresponding variables, meaning that you could access their values in your `inference.sh` script through `$<variable_name>`**.
+
 
 For example, if you are using Python, we recommend first defining a Python script for inference. See [`src/test.py`](src/test.py) where we have defined a dummy example of such a script, that handles input and output arguments, runs dummy inference and saves outputs in the correct format. Running the script from `inference.sh` should be as simple as:
 
@@ -63,6 +65,11 @@ python src/test.py --input $t2w_image --participants $participants --output_seg 
 
 We recommend you test your inference code on an example from the training data to ensure it works as expected. After all the development and testing is done, you can proceed to the final step of containerizing your application.
 
+See [`inference.sh`](src/inference.sh) for further details. To run the script locally on a test image, use the following command:
+
+```bash
+bash src/inference.sh
+```
 
 ## Step 2: Build the Docker Container
 
@@ -79,21 +86,21 @@ You can build the Docker container using:
 docker build -t <teamname> .
 ```
 
-Replace `<teamname>` with your team name. After successful building, ensure your [`src/inference.sh`](src/inference.sh) script is executable from the Docker image:
+Replace `<teamname>` with your team name. After successful building, ensure your [`src/inference.sh`](src/inference.sh) script is executable from the Docker image using following command:
 
 ```bash
 sudo docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged -v /path/to/data/locally:/path/to/data/in/docker -e t2w_image=/path/to/data/in/docker/image.nii.gz -e participants=/path/to/data/in/docker/participants.tsv -e output_seg=/path/to/data/in/docker/output_segm.nii.gz -e output_biom=/path/to/data/in/docker/output_biom.csv <teamname> bash src/inference.sh
 ```
 
-In it, the `-v` parameter maps a local path to a specific location in the Docker container space. The `--gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged` arguments enable GPU-accelerated execution. Assignments like `t2w_image=/path/to/data/in/docker/image.nii.gz` pass named arguments to [`src/inference.sh`](src/inference.sh) with paths to input/output files inside the container. Don't forget to adjust the paths to test execution on some training images in the command above.
+In it, the `-v` parameter maps a local path to a specific location in the Docker container space. The `--gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged` arguments enable GPU-accelerated execution. Assignments like `t2w_image=/path/to/data/in/docker/image.nii.gz` pass named arguments to [`src/inference.sh`](src/inference.sh) with paths to input/output files inside the container filesystem. Don't forget to adjust the paths to test execution on some training images in the command above.
+
 
 ### 2.2 Evaluation Script
 Finally, please ensure that the evaluation script that iterates through the full dataset works when using the Docker image.
 ```bash
 sudo docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --privileged -v /path/to/data/locally:/path/to/data/in/docker -e bids_input="/path/to/feta_2.3" -e participants="/path/to/feta_2.3/participants.tsv" -e teamname=<teamname> <teamname> /bin/bash scripts/run_test.sh
 ```
-
-This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note: for running scripts through the container, you need to pass the named variables values using `-e` flag.
+This command runs the inference script sequentially on all training data located in a given BIDS formatted `bids_input` directory. This same command will be used on the test data during the evaluation phase. Note that for running scripts inside the container you need to pass all variable values with an  `-e` flag.
 
 ### 2.3 Save and Submit
 Once you successfully build your Docker container, save it to a zipped file and upload it to a cloud platform (e.g., Mega, Google Drive, WeTransfer). Use the following command:
